@@ -1740,6 +1740,21 @@ NOEXPORT void print_bound_address(CLI *c) {
         return;
     }
     txt=s_ntop(&addr, addrlen);
+    if (c->ssl) {
+        X509* peer_cert;
+        char *peer_cert_subject;
+        peer_cert = SSL_get_peer_certificate(c->ssl);
+        if (peer_cert) {
+            peer_cert_subject=X509_NAME2text(X509_get_subject_name(peer_cert));
+            s_log(LOG_NOTICE,
+                "IDENT Service [%s] from %s --> %s",
+                c->opt->servname, txt, peer_cert_subject
+            );
+            str_free(peer_cert_subject);
+            X509_free(peer_cert);
+        }
+    }
+
     s_log(LOG_NOTICE,"Service [%s] connected remote server from %s",
         c->opt->servname, txt);
     str_free(txt);
